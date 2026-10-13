@@ -1505,10 +1505,10 @@ $var_html1 = "<div class='mb-3'>
 			$urldescarga = $archivoadjunto;
 		}
 
-		// Correos de Outlook (.msg): el navegador no los puede mostrar, se leen en el servidor
-		if($extension === 'msg'){
+		// Correos MSG y EML: se leen en el servidor y se conserva la descarga original
+		if(in_array($extension, array('msg', 'eml'), true)){
 			return "<a target='_blank' rel='noopener noreferrer' href='ver_msg.php?archivo=".rawurlencode($archivoadjunto)."'>Ver correo</a><br/>"
-				."<a href='includes/archivos/".rawurlencode($archivoadjunto)."'>Descargar</a><br/>";
+				."<a download href='includes/archivos/".rawurlencode($archivoadjunto)."'>Descargar</a><br/>";
 		}
 
 		return "<a target='_blank'  href='includes/archivos/".$urldescarga."'>Visualizar!</a><br/>";
@@ -1807,7 +1807,7 @@ private function sanitizarNombreArchivo($nombrebase) {
 			$ext == 'docx' || $ext == 'doc'  || $ext == 'xml'  ||
 			$ext == 'xlsx' || $ext == 'xls'  || $ext == 'ppt'  ||
 			$ext == 'pptx' || $ext == 'txt'  || $ext == 'htm'  ||
-			$ext == 'webp' || $ext == 'msg' || $ext == 'xlsm'
+			$ext == 'webp' || $ext == 'msg' || $ext == 'eml' || $ext == 'xlsm'
 		){
 			if(move_uploaded_file($nombretemp, $nombre_carpeta.'/'.$nuevonombre)){
 				chmod($nombre_carpeta.'/'.$nuevonombre, 0755);
@@ -1841,7 +1841,7 @@ $nuevonombre = $nombrebase . '_' . uniqid() . '.' . $ext;
 			$ext == 'docx' || $ext == 'doc'  || $ext == 'xml'  ||
 			$ext == 'txt'  || $ext == 'xlsx' || $ext == 'xls'  ||
 			$ext == 'ppt'  || $ext == 'pptx' || $ext == 'htm'  ||
-			$ext == 'webp' || $ext == 'msg' ||$ext == 'xlsm'  
+			$ext == 'webp' || $ext == 'msg' || $ext == 'eml' || $ext == 'xlsm'
 		){
 			if(move_uploaded_file($nombretemp, $nombre_carpeta.'/'.$nuevonombre)){
 				chmod($nombre_carpeta.'/'.$nuevonombre, 0755);
@@ -1891,7 +1891,7 @@ $nuevonombre = $nombrebase . '_' . uniqid() . '.' . $ext;
 			$ext == 'jpg'  || $ext == 'png'  || $ext == 'mp4'  ||
 			$ext == 'docx' || $ext == 'doc'  || $ext == 'xml'  ||
 			$ext == 'xlsx' || $ext == 'xls'  || $ext == 'ppt'  ||
-			$ext == 'pptx' || $ext == 'msg' ||$ext == 'htm'  || $ext == 'webp'  || $ext == 'xlsm'
+			$ext == 'pptx' || $ext == 'msg' || $ext == 'eml' ||$ext == 'htm'  || $ext == 'webp'  || $ext == 'xlsm'
 		){
 			if(move_uploaded_file($nombretemp, $nombre_carpeta.'/'.$nuevonombre)){
 				chmod($nombre_carpeta.'/'.$nuevonombre, 0755);
