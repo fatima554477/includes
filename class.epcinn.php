@@ -351,11 +351,20 @@ foreach ($xmlDoc->xpath('//cfdi:Emisor') as $autor1) {
 			
 
 //		$session = isset($_SESSION['idPROV'])?$_SESSION['idPROV']:''; 
+	public function escapar_datos_xml_sql($datos, $conn){
+		foreach($datos as $campo => $valor){
+			if(is_string($valor)){
+				$datos[$campo] = mysqli_real_escape_string($conn, $valor);
+			}
+		}
+		return $datos;
+	}
+
 	public function guardar_db_xml($url,$session,$ultimo_id,$conn,$tipo_comprobante=false){
 
 		
 			if( file_exists($url) ){
-	$regreso = $this->lectorxml($url);
+	$regreso = $this->escapar_datos_xml_sql($this->lectorxml($url), $conn);
 			}   	
 	$Version = isset($regreso['Version'])?$regreso['Version']:'';
 	$sello = isset($regreso['sello'])?$regreso['sello']:'';
@@ -463,7 +472,7 @@ tipo_comprobante
 
 		
 			if( file_exists($url) ){
-	$regreso = $this->lectorxml($url);
+	$regreso = $this->escapar_datos_xml_sql($this->lectorxml($url), $conn);
 			}   	
 	$Version = isset($regreso['Version'])?$regreso['Version']:'';
 	$sello = isset($regreso['sello'])?$regreso['sello']:'';
