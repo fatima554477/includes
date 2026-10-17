@@ -35,17 +35,47 @@ class ComprobantePagoEmail
         return $_SESSION['csrf_comprobante_pago'];
     }
 
+    /** Devuelve destinatarios únicos; rechaza toda la lista si uno es inválido. */
+    public static function destinatarios($email)
+    {
+        if (!is_string($email) || trim($email) === '') {
+            return array();
+        }
+        $destinatarios = array();
+        foreach (explode(',', $email) as $direccion) {
+            $direccion = trim($direccion);
+            if (!filter_var($direccion, FILTER_VALIDATE_EMAIL)) {
+                throw new ComprobantePagoEmailException('Escribe correos válidos separados por comas para el envío del comprobante de pago.');
+            }
+            $clave = strtolower($direccion);
+            if (!isset($destinatarios[$clave])) {
+                $destinatarios[$clave] = $direccion;
+            }
+        }
+        return array_values($destinatarios);
+    }
+
     public static function validarEmail($email)
     {
-        return $email === null || (is_string($email) &&
-            (trim($email) === '' || filter_var(trim($email), FILTER_VALIDATE_EMAIL)));
+        if ($email === null) {
+            return true;
+        }
+        if (!is_string($email)) {
+            return false;
+        }
+        try {
+            self::destinatarios($email);
+            return true;
+        } catch (ComprobantePagoEmailException $error) {
+            return false;
+        }
     }
 
     public static function enviar($registro, $documentos, $smtp, $directorio, $mail)
     {
-        $email = isset($registro['email_enviacomprobante']) ? trim($registro['email_enviacomprobante']) : '';
-        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            throw new ComprobantePagoEmailException('El registro no tiene un email válido para el comprobante.');
+        $destinatarios = self::destinatarios(isset($registro['email_enviacomprobante']) ? $registro['email_enviacomprobante'] : '');
+        if (!$destinatarios) {
+            throw new ComprobantePagoEmailException('El registro no tiene correos válidos para el comprobante.');
         }
         $evento = trim((string)$registro['NUMERO_EVENTO']);
         $remitente = self::remitente($evento);
@@ -87,7 +117,11 @@ class ComprobantePagoEmail
         $mail->Port = $smtp['Port'];
         $mail->CharSet = 'UTF-8';
         $mail->setFrom($remitente, isset($smtp['setFrom2']) ? $smtp['setFrom2'] : $remitente);
-        $mail->addAddress($email);
+        foreach ($destinatarios as $email) {
+            if (!$mail->addAddress($email)) {
+                throw new ComprobantePagoEmailException('No se pudo agregar uno de los destinatarios del comprobante.');
+            }
+        }
         foreach ($adjuntos as $ruta => $nombre) {
             if (!$mail->addAttachment($ruta, $nombre)) {
                 throw new ComprobantePagoEmailException('No se pudo adjuntar el comprobante de transferencia.');
